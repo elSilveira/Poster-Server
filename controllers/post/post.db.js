@@ -11,7 +11,23 @@ class PostDbController {
     JOIN useraccount as ua ON ua.account_id = ac.account_id
     WHERE ua.user_id = ${id};`);
   }
-
+  static async getPostsByTime(time) {
+    return database.runQuery(`
+    SELECT p.*, c.*
+    FROM postchannel pc
+    join post as p on p.id = pc.post_id
+    join channel as c on c.id = pc.channel_id
+    WHERE pc.time = '${time}';`);
+  }
+  static async getTimeToPost() {
+    return database.runQuery(`
+    SELECT time
+    FROM postchannel 
+    WHERE time > NOW()
+    GROUP BY time
+    ORDER BY time
+    LIMIT 1;`);
+  }
   static async getUserWithPlatform(id = null) {
     return database.runQuery(`
     SELECT p.*, 
@@ -37,7 +53,7 @@ class PostDbController {
 
     let PostChannel = await database.insertMany(
       'postchannel',
-      'time, post_id, channel_id',
+      'time, last_update, post_id, channel_id',
       this.formatTuples(income.postChannels, res.insertId))
 
     return income.post;
@@ -48,8 +64,9 @@ class PostDbController {
   }
 
   static formatTuples(arr, post_id) {
-    return arr.map((obj) => `('${obj.time}', ${post_id}, ${obj.channel_id})`).join(', ');
+    return arr.map((obj) => `('${obj.time}', '${this.formattedDate}', ${post_id}, ${obj.channel_id})`).join(', ');
   }
+  static formattedDate = (new Date(Date.now())).toISOString().replace('T', ' ').substring(0, 19);
 }
 
 module.exports = PostDbController;

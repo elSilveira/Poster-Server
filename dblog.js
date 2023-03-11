@@ -85,6 +85,8 @@ CREATE TABLE Post (
 CREATE TABLE PostChannel (
   id INT NOT NULL AUTO_INCREMENT,
   time DATETIME NOT NULL,
+  last_update DATETIME,
+  done BOOLEAN,
   post_id INT NOT NULL,
   channel_id INT NOT NULL,
   PRIMARY KEY (id),

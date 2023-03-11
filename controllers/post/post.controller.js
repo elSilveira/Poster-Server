@@ -1,7 +1,16 @@
 
+const poster = require("../poster");
 const PostDbController = require("./post.db");
 
 class PostController {
+  
+  static async getPostsByTime(time){
+    return await PostDbController.getPostsByTime(time)
+  }
+  static async getTimeToPost(){
+    return await PostDbController.getTimeToPost()
+  }
+
   static async getUserWithPlatform(accountId) {
     return await PostDbController.getUserWithPlatform(accountId)
   }
@@ -19,6 +28,7 @@ class PostController {
     if (incoming.post && incoming.postChannels) {
       console.log(incoming)
       newPost = await PostDbController.post(incoming);
+      poster.start();
     }
     return newPost
   }

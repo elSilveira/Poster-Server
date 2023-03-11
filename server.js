@@ -4,6 +4,7 @@ const AuthRoutes = require('./controllers/auth/auth.routes');
 const AccountRoutes = require('./controllers/account/account.routes');
 const ChannelRoutes = require('./controllers/channel/channel.routes');
 const PostRoutes = require('./controllers/post/post.routes');
+const poster = require('./controllers/poster');
 const fastify = require('fastify')({ logger: true });
 
 fastify.register(require("fastify-cors"), {
@@ -32,3 +33,4 @@ const start = async () => {
 }
 
 start()
+poster.start();
