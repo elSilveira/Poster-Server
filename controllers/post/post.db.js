@@ -26,7 +26,6 @@ class PostDbController {
   }
 
   static async post(income) {
-    console.log(income)
     let res = await database.insert(
       'post',
       'file, thumbnail, title, description, tags',
