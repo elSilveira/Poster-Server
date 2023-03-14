@@ -11,21 +11,22 @@ class PostDbController {
     JOIN useraccount as ua ON ua.account_id = ac.account_id
     WHERE ua.user_id = ${id};`);
   }
-  static async getPostsByTime(time) {
+  static async getPostsById(post_id) {
     return database.runQuery(`
-    SELECT p.*, c.*
+    SELECT p.*, au.*
     FROM postchannel pc
     join post as p on p.id = pc.post_id
-    join channel as c on c.id = pc.channel_id
-    WHERE pc.time = '${time}';`);
+    join accountchannel as ac on pc.channel_id = ac.channel_id
+    join accountchannelauth as aca on aca.accountchannel_id = ac.id
+    join auth as au on au.id = aca.auth_id
+    WHERE pc.id = ${post_id};`);
   }
   static async getTimeToPost() {
     return database.runQuery(`
-    SELECT time
+    SELECT id, time
     FROM postchannel 
-    WHERE time > NOW()
-    GROUP BY time
-    ORDER BY time
+    WHERE time >= NOW()
+    ORDER BY time ASC
     LIMIT 1;`);
   }
   static async getUserWithPlatform(id = null) {
@@ -70,3 +71,5 @@ class PostDbController {
 }
 
 module.exports = PostDbController;
+
+

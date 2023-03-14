@@ -26,7 +26,6 @@ class PostController {
   static async addPost(incoming) {
     let newPost;
     if (incoming.post && incoming.postChannels) {
-      console.log(incoming)
       newPost = await PostDbController.post(incoming);
       poster.start();
     }

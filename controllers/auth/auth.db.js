@@ -5,7 +5,7 @@ class AuthDbController {
   static async getYoutubeAuthByUserId(userId) {
     return await database.runQuery(`SELECT *
       FROM Auth AS a
-      WHERE a.provedor_id = 'google_consent'
+      WHERE a.provedor_id = 'youtube_permissions'
       LIMIT 1`);
   }
 

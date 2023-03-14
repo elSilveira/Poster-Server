@@ -5,10 +5,9 @@ const env = require('../../.env');
 const AuthDbController = require('../auth/auth.db');
 const { segredo } = require('../token.controller');
 const fs = require('fs');
-const { title } = require('process');
 const auth = new OAuth2Client(env.GOOGLE.clientId, env.GOOGLE.clientSecret, env.GOOGLE.redirectUrl);
 
-module.exports = class GoogleController {
+class GoogleController {
 
   static async googleAuth() {
     const authUrl = auth.generateAuthUrl({
@@ -20,11 +19,24 @@ module.exports = class GoogleController {
     return authUrl
   }
 
-  static async getAuth(user) {
+  static async postVideo(channel, youtubeVideo) {
+    let auth = await this.getChannelAuth(channel);
+    return await this.insertVideo(auth, youtubeVideo)
+  }
+
+  static async getChannelAuth(channel = null) {
+    let myJwt = jwt.decode(channel, segredo());
+
+    return this.continueAuth(myJwt)
+  }
+
+  static async getAuth(user = null) {
     let myRes = await AuthDbController.getYoutubeAuthByUserId(user);
     let myJwt = jwt.decode(myRes[0]['token_acesso'], segredo());
+    this.continueAuth(myJwt)
+  }
 
-    console.log(myJwt);
+  static async continueAuth(myJwt) {
     // Retrieve the access token and refresh token from Google OAuth API
     const accessToken = myJwt.access_token;
     const refreshToken = myJwt.refresh_token;
@@ -33,8 +45,7 @@ module.exports = class GoogleController {
       access_token: accessToken,
       refresh_token: refreshToken
     });
-
-    await this.insertFile(auth)
+    return auth
   }
 
   static async insertFile(auth) {
@@ -59,18 +70,7 @@ module.exports = class GoogleController {
     });
   }
 
-  static async insertVideo(auth) {
-    const myVideo = {
-      title: "Desvendando o Futuro da Inteligência Artificial (IA) - Episódio Especial!",
-      description: `Neste episódio especial do canal Fronteira Digital, vamos explorar alguns dos tópicos mais interessantes e atuais da tecnologia de inteligência artificial. 
-      Conheça as tendências, trilhas do futuro, avanços e como isso está mudando o mundo, statups, analisys, educação, ciencia...
-    
-      #tech #chatgpt #chatbots #educação #medical #startup #inteligenciaartificial 
-      Não perca essa jornada incrível através da tecnologia!`,
-      videoPath: '../assets/bee.mp4',
-      thumbPath: '../assets/thumbs/mythumb.png',
-      privacyStatus: 'private'
-    }
+  static async insertVideo(auth, myVideo) {
     const youtube = google.youtube({ version: 'v3', auth });
     const fileSize = fs.statSync('../assets/bee.mp4').size;
     const res = youtube.videos.insert({
@@ -97,8 +97,26 @@ module.exports = class GoogleController {
       }
     }, () => {
       console.log(`Video was published.`);
+      return true
     }, () => {
       console.log(`Video was error.`);
+      return false
     })
   }
+
 }
+
+class YoutubeVideo {
+  constructor(title, description, videoPath, thumbPath, privacyStatus) {
+    this.title = title;
+    this.description = description;
+    this.videoPath = videoPath;
+    this.thumbPath = thumbPath;
+    this.privacyStatus = privacyStatus;
+  }
+}
+
+module.exports = {
+  GoogleController,
+  YoutubeVideo
+};
