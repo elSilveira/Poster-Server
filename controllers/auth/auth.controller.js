@@ -12,7 +12,7 @@ class AuthController {
     const authUrl = auth.generateAuthUrl({
       accessType: "offline",
       prompt: "consent",
-      scope: ["email"]
+      scope: ['email','https://www.googleapis.com/auth/drive.file']
     });
     return authUrl
   }

@@ -5,6 +5,7 @@ const AccountRoutes = require('./controllers/account/account.routes');
 const ChannelRoutes = require('./controllers/channel/channel.routes');
 const PostRoutes = require('./controllers/post/post.routes');
 const poster = require('./controllers/poster');
+const GoogleRoutes = require('./controllers/google/google.routes');
 const fastify = require('fastify')({ logger: true });
 
 fastify.register(require("fastify-cors"), {
@@ -18,6 +19,7 @@ async function addRoutes() {
   AccountRoutes.routes.forEach(route => fastify.route(route));
   ChannelRoutes.routes.forEach(route => fastify.route(route));
   PostRoutes.routes.forEach(route => fastify.route(route));
+  GoogleRoutes.routes.forEach(route => fastify.route(route));
 }
 
 addRoutes()

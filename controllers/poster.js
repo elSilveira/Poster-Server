@@ -2,10 +2,10 @@ const PostDbController = require("./post/post.db");
 module.exports = class poster {
   timeouts;
   static async start() {
-    if (this.timeouts != null){
+    if (this.timeouts != null) {
       clearTimeout(this.timeouts)
       this.timeouts = null;
-    } 
+    }
     let timePost = await PostDbController.getTimeToPost();
     this.setPosterService(timePost[0]);
   }
@@ -28,7 +28,6 @@ module.exports = class poster {
 
   static async doPost(time) {
     let posts = await PostDbController.getPostsByTime(this.formatDate(time));
-    console.log(posts)
     this.start();
   }
 
