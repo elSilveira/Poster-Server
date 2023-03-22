@@ -4,11 +4,10 @@ const moment = require('moment-timezone');
 const now = moment().tz('America/Sao_Paulo');
 
 module.exports = class poster {
-  timeouts;
+  timeout;
   static async start() {
-    if (this.timeouts != null) {
-      clearTimeout(this.timeouts)
-      this.timeouts = null;
+    if (this.timeout != null) {
+      clearTimeout(this.timeout)
     }
     let timePost = await PostDbController.getTimeToPost();
     this.setPosterService(timePost[0]);
@@ -16,44 +15,65 @@ module.exports = class poster {
 
   static setPosterService(timePost) {
     if (timePost == null) {
-      clearTimeout(this.timeouts);
+      console.log("Post List empty! ");
+      clearTimeout(this.timeout);
     } else {
-      let date = this.formatDate(timePost['time']);
-      let time = new Date(timePost['time']).getTime() - new Date(now).getTime();
-      if (time > 3600000 || time < 0) {
-        console.log("Back in 24h: " + new Date(Date.now()));
-        this.timeouts = setTimeout(() => this.start(), 3600000)
+      let time = new Date(timePost['time']).getTime() - new Date(Date.now()).getTime();
+
+      if (time > 86400000 || time < 0) {
+        let nextTimer = Date.now() + 86400000;
+        console.log("Back in 24h: " + new Date(nextTimer).toLocaleString());
+        this.timeout = setTimeout(() => this.start(), 86400000)
       }
       else {
-        console.log("Ativado para: " + time + " $$ " + new Date(now + time));
-        this.timeouts = setTimeout(() => this.doPost(timePost['id']), time)
+        console.log("Ativado para: " + time + " $$ " + new Date(Date.now() + time));
+        console.log(new Date(Date.now() + time).toLocaleString())
+        this.timeout = setTimeout(() => { this.doPost() }, time) //change to time
       }
     }
   }
+  static myposts = [];
 
-  static async postList(posts, index = 0) {
-    if (posts && posts[index]) {
-      let post = posts[index];
-      console.log(post)
+  static async postList() {
+    if (this.myposts.length == 0) {
+      return
+    }
+    if (this.myposts && this.myposts[0]) {
+      let post = this.myposts[0];
       let vid = new YoutubeVideo(post.title, post.description, post.file, post.thumbnail, 'private');
-      let res = await GoogleController.postVideo(post.token_acesso, vid);
-      // .finally(
-      //   async () => {
-      //     if (posts.length > index)
-      //       await this.postList(posts, index++);
-      //     else
-      //       return
-      //   });
-      return res
+      GoogleController.postVideo(post.token_acesso, vid)
+        .then(
+          async (ev) => {
+            console.log(`Video was published.`);
+            var res = await PostDbController.setDone(post['postchannel_id'], true)
+            this.postNext()
+          },
+          async (err) => {
+            console.log(`Post Error.`);
+            var res = await PostDbController.setDone(post['postchannel_id'], false)
+            this.postNext()
+          },
+          () => {
+            console.log("Last")
+          }
+        );
     }
   }
 
-  static async doPost(post_id) {
-    console.log("DO")
-    let posts = await PostDbController.getPostsById(post_id);
-    let res = await this.postList(posts);
-    // this.start();
+  static async postNext() {
+    this.myposts.splice(0, 1);
+    console.log("Do Next")
+    if (this.myposts.length == 0) {
+      this.start()
+      return
+    }
+    await this.postList()
   }
 
+  static async doPost() {
+    console.log("Do Post")
+    this.myposts = await PostDbController.getPostsByTime();
+    await this.postList();
+  }
   static formatDate(date) { return (new Date(date)).toUTCString().replace('T', ' ').substring(0, 19); }
 }

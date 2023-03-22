@@ -4,8 +4,11 @@ const PostDbController = require("./post.db");
 
 class PostController {
   
-  static async getPostsByTime(time){
-    return await PostDbController.getPostsByTime(time)
+  static async finalizePost(post, done){
+    return await PostDbController.setDone(post['postchannel_id'], done)
+
+  }static async getPostsByTime(){
+    return await PostDbController.getPostsByTime()
   }
   static async getTimeToPost(){
     return await PostDbController.getTimeToPost()

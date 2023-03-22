@@ -6,6 +6,8 @@ const AuthDbController = require('../auth/auth.db');
 const { segredo } = require('../token.controller');
 const fs = require('fs');
 const auth = new OAuth2Client(env.GOOGLE.clientId, env.GOOGLE.clientSecret, env.GOOGLE.redirectUrl);
+const { gaxios } = require('gaxios');
+
 
 class GoogleController {
 
@@ -20,11 +22,11 @@ class GoogleController {
   }
 
   static async postVideo(channel, youtubeVideo) {
-    let auth = await this.getChannelAuth(channel);
-    return await this.insertVideo(auth, youtubeVideo)
+    let auth = this.getChannelAuth(channel);
+    return this.insertVideo(auth, youtubeVideo)
   }
 
-  static async getChannelAuth(channel = null) {
+  static getChannelAuth(channel = null) {
     let myJwt = jwt.decode(channel, segredo());
 
     return this.continueAuth(myJwt)
@@ -36,7 +38,7 @@ class GoogleController {
     this.continueAuth(myJwt)
   }
 
-  static async continueAuth(myJwt) {
+  static continueAuth(myJwt) {
     // Retrieve the access token and refresh token from Google OAuth API
     const accessToken = myJwt.access_token;
     const refreshToken = myJwt.refresh_token;
@@ -70,10 +72,10 @@ class GoogleController {
     });
   }
 
-  static async insertVideo(auth, myVideo) {
+  static insertVideo(auth, myVideo) {
     const youtube = google.youtube({ version: 'v3', auth });
     const fileSize = fs.statSync('../assets/bee.mp4').size;
-    const res = youtube.videos.insert({
+    return youtube.videos.insert({
       part: 'snippet,status',
       notifySubscribers: false,
       requestBody: {
@@ -95,12 +97,6 @@ class GoogleController {
         const progress = (evt.bytesRead / fileSize) * 100;
         console.log(`${progress}% complete`);
       }
-    }, () => {
-      console.log(`Video was published.`);
-      return true
-    }, () => {
-      console.log(`Video was error.`);
-      return false
     })
   }
 
