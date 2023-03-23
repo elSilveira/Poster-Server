@@ -1,5 +1,5 @@
-const bluebird = require('bluebird');
-const mysql = require('mysql2/promise');
+const bluebird = require('../node_modules/bluebird');
+const mysql = require('../node_modules/mysql2/promise');
 const env = require('../.env.js');
 
 class database {
