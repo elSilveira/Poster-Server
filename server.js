@@ -22,7 +22,7 @@ async function addRoutes() {
   GoogleRoutes.routes.forEach(route => fastify.route(route));
 }
 
-addRoutes()
+// addRoutes()
 
 // Declare a route
 const start = async () => {
