@@ -50,6 +50,7 @@ module.exports = class poster {
           },
           async (err) => {
             console.log(`Post Error.`);
+            console.log(err);
             var res = await PostDbController.setDone(post['postchannel_id'], false)
             this.postNext()
           },

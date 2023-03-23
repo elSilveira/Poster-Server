@@ -35,4 +35,3 @@ const start = async () => {
 }
 
 start()
-poster.start();
