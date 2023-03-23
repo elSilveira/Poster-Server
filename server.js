@@ -23,11 +23,11 @@ async function addRoutes() {
 }
 
 addRoutes()
-
+const port = process.env.PORT || 8080;
 // Declare a route
 const start = async () => {
   try {
-    await fastify.listen({ port: 8080 })
+    await fastify.listen({ port: port })
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)
